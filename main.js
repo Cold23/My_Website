@@ -1,6 +1,7 @@
 import * as THREE from './node_modules/three/build/three.module.js';
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { Quaternion } from 'three';
 
 var doRotate = false;
 
@@ -43,12 +44,6 @@ const spaceTex = loader.load('space.png');
 scene.background = spaceTex;
 
 
-rendered.setPixelRatio(window.devicePixelRatio);
-
-rendered.setSize(window.innerWidth, window.innerHeight);
-
-rendered.render(scene, camera);
-
 const geometry = new THREE.TorusGeometry(10, 3, 16, 100);
 
 const material = new THREE.MeshStandardMaterial({ color: 0xFF6347 });
@@ -81,17 +76,17 @@ moonPivot.add(moon);
 moon.position.x = -10;
 
 
-const point = new THREE.Object3D();
+const earthCenter = new THREE.Object3D();
 
 
 
-point.add(earth)
+earthCenter.add(earth)
 
-earth.position.x = -30;
+earth.position.x = -25;
 
-earth.position.z = -10;
+earth.position.z = 30;
 
-scene.add(point);
+scene.add(earthCenter);
 
 scene.add(torus);
 
@@ -108,33 +103,35 @@ shuttleScene.position.z = -20;
 scene.add(shuttleScene);
 
 
-function moveCamera() {
-  const t = document.body.getBoundingClientRect().top;
+var percent = 0;
 
+function moveCamera() {
+
+  const h = document.documentElement,
+    b = document.body,
+    st = 'scrollTop',
+    sh = 'scrollHeight';
+
+  percent = (h[st] || b[st]) / ((h[sh] || b[sh]) - h.clientHeight) * 100;
 
   torus.rotation.x += 0.1;
   torus.rotation.y += 0.05;
   torus.rotation.z += 0.1;
 
-  camera.position.z = t * -0.01;
-  camera.position.x = t * -0.0002;
-  camera.position.y = t * -0.0002;
-  earth.position.x = THREE.MathUtils.clamp(-15 + t * 0.01, -30, -15)
-  earth.position.z = THREE.MathUtils.clamp(-2.5 + t * 0.003, -15, -5);
+  earth.rotation.x += 0.1;
+  earth.rotation.y += 0.05;
+  earth.rotation.z += 0.1;
 
-  const lerpTime = t / -3400;
+  camera.position.z = percent * 0.7;
+  camera.position.x = percent * 0.02;
+  camera.position.y = percent * 0.02;
 
-  shuttleScene.position.x = THREE.MathUtils.lerp(-90, 90, lerpTime);
+
+  const lerpTime = percent / 100.0;
+
+  shuttleScene.position.x = THREE.MathUtils.lerp(-120, 150, lerpTime);
   shuttleScene.position.y = THREE.MathUtils.lerp(-20, 20, lerpTime);
   shuttleScene.rotation.x = THREE.MathUtils.lerp(THREE.MathUtils.degToRad(-5), THREE.MathUtils.degToRad(90), lerpTime * lerpTime);
-
-  point.rotateY(0.01);
-  point.rotateZ(0.05);
-
-  earth.rotateZ(0.1);
-
-  moonPivot.rotateX(0.1);
-  moonPivot.rotateZ(0.01);
 
 
 }
@@ -147,20 +144,39 @@ function animate() {
   torus.rotation.x += 0.01;
   torus.rotation.y += 0.005;
   torus.rotation.z += 0.01;
+  earth.rotateZ(0.001);
+  if (percent > 95.0) {
+    earthCenter.rotateX(0.0005);
+    earthCenter.rotateY(0.005);
+    earthCenter.rotateZ(0.0001);
 
-  const t = document.body.getBoundingClientRect().top;
-  if (t < -10) {
+  } else {
+    earth.position.x = -25;
+    earth.position.z = 30;
+
+    earthCenter.quaternion.slerp(new THREE.Quaternion().identity(), 0.05);
+
+
+    // earthCenter.rotation.y = 0;
+    // earthCenter.rotation.z = 0;
+    // earthCenter.rotation.x = 0;
+  }
+
+  if (percent > 2) {
     doRotate = true;
   }
   if (doRotate) {
-    point.rotateY(0.0005);
-    point.rotateZ(0.005);
-
-    earth.rotateZ(0.001);
 
     moonPivot.rotateX(0.005);
     moonPivot.rotateZ(0.01);
   }
+
+  // Update Canvas
+
+  rendered.setPixelRatio(window.devicePixelRatio);
+
+  rendered.setSize(window.innerWidth, window.innerHeight);
+
   rendered.render(scene, camera);
 }
 

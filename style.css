@@ -73,6 +73,11 @@ canvas {
     margin-bottom: var(--spacing);
   }
 
+  .small {
+     font-size: xx-small !important;
+    grid-column: 2/span 5;
+  }
+
   blockquote p {
     color: black;
     background-color: white;
