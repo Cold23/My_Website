@@ -1,7 +1,6 @@
-import * as THREE from './node_modules/three/build/three.module.js';
+import * as THREE from 'https://unpkg.com/three@0.127.0/build/three.module.js';
 
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Quaternion } from 'three';
+import { GLTFLoader } from 'https://unpkg.com/three@0.127.0/examples/jsm/loaders/GLTFLoader.js';
 
 var doRotate = false;
 
